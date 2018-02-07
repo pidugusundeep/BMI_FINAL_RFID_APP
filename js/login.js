@@ -1,5 +1,4 @@
 function login() {
-    $('#loader').show();
     if ($('#login_Id').val() != "") {
         $.ajax('http://localhost:3000/api/Customer/' + $('#login_Id').val(),
             {
@@ -13,7 +12,6 @@ function login() {
                     window.location = "passengerview.html"
                 },
                 error: function (jqXhr, textStatus, errorMessage) {
-                    $('#loader').show();
                     $.ajax('http://localhost:3000/api/Airlines/' + $('#login_Id').val(),
                         {
                             dataType: 'json', // type of response data
@@ -27,7 +25,6 @@ function login() {
                                 Materialize.toast('Invalid Login Details', 3000);
                                 $('#login_Id').val("")
                                 $('#login_Id').focus();
-                                $('#loader').hide();
                             }
                         });
                 }
@@ -37,9 +34,7 @@ function login() {
         Materialize.toast('Id cannot be empty !', 3000);
         $('#login_Id').val("")
         $('#login_Id').focus();
-        $('#loader').hide();
     }
-
 }
 function register(a) {
     if (a != 1) {

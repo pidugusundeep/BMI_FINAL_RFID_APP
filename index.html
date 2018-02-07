@@ -83,10 +83,7 @@
       $('.tabs').tabs();
       $('.modal-trigger').click(function () { });
       $('.modal').modal();
-      $('#Loader').modal('open');
-      $('.timepicker').pickatime();
       addUsers(0);
-      $('#Loader').modal('close');
     });
     function AirlineDestinationTimeSet() {
       $.ajax('http://localhost:3000/api/Customer',
@@ -127,6 +124,7 @@
         return i;
     }
     function addUsers(callairline) {
+      $('#Loader').modal('open');
       callairline = callairline;
       //Adding passengers
       $.ajax('http://localhost:3000/api/Customer',
@@ -225,39 +223,15 @@
               });
           }
         });
+        $('#Loader').modal('close');
       return true;
+
     }
     function logout() {
       sessionStorage.clear();
       window.location = "login.html"
     }
-    function addPassenger() {
-      $('#Loader').modal('open');
-      $.get("http://localhost:3000/api/Account", function (data) {
-        $.ajax({
-          type: "POST",
-          url: "http://localhost:3000/api/Account",
-          data: { "$class": "org.acme.sample.Account", "accountId": "A" + data.length + 1, "balance": $('#acc_balance').val() },
-          dataType: 'json',
-          success: function (data1) {
-            $.get("http://localhost:3000/api/Customer", function (customerData) {
-              $.ajax({
-                type: "POST",
-                url: "http://localhost:3000/api/Customer",
-                data: { "$class": "org.acme.sample.Customer", "firstName": $('#f_name').val(), "lastName": $('#l_name').val(), "customerAccount": "resource:org.acme.sample.Account#" + data1.accountId, "userId": "A" + parseInt(customerData.length + 1) },
-                dataType: 'json',
-                success: function (data) {
-                  $('#passengerList').empty();
-                  addUsers(1)
-                  $('#Loader').modal('close');
-                  Materialize.toast('New Passenger added !', 3000);
-                }
-              });
-            });
-          }
-        });
-      });
-    }
+  
   </script>
 </body>
 

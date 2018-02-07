@@ -33,6 +33,7 @@
                 var pubTT = m.timetoken; // Publish timetoken   
                 document.getElementById("messages").innerHTML += msg + "</br>";
                 BaggageArrived(msg);
+                console.log("-- Baggage arrived ! --")
             },
             presence: function (p) {
                 // handle presence

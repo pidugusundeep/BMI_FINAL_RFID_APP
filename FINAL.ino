@@ -5,7 +5,6 @@
 #define PubNub_BASE_CLIENT WiFiClient
 #include <PubNub.h>
 
-
 // Replace these with your WiFi network settings
 const char* ssid = "pidugusundeep5"; //replace this with your WiFi network name
 const char* password = "deep1234"; //replace this with your WiFi network password

@@ -1,0 +1,225 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+</head>
+<body onload="subscribe()">
+    <Center>
+        <h1>PubNub Test and Initial Setup</h1>
+        <button onclick="Reset()">RESET</button>
+        <div id="Status"></div>
+        <p id="messages"></p>
+    </Center>
+</body>
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.20.1.js"></script>
+<script>
+    function subscribe() {
+
+        pubnub = new PubNub({
+            publishKey: 'pub-c-8b72e987-9fc7-4566-b237-72a2297e78ca',
+            subscribeKey: 'sub-c-c8a055ae-e4d3-11e7-9f1e-625d8ea2b1bc'
+        })     // your subscribe key
+        pubnub.subscribe({
+            channels: ['IOT-RFID'],
+        });
+        pubnub.addListener({
+            message: function (m) {
+                // handle message
+                var actualChannel = m.actualChannel;
+                var channelName = m.channel; // The channel for which the message belongs
+                var msg = m.message; // The Payload
+                var publisher = m.publisher;
+                var subscribedChannel = m.subscribedChannel;
+                var channelGroup = m.subscription; // The channel group or wildcard subscription match (if exists)
+                var pubTT = m.timetoken; // Publish timetoken   
+                document.getElementById("messages").innerHTML += msg + "</br>";
+                BaggageArrived(msg);
+            },
+            presence: function (p) {
+                // handle presence
+                var action = p.action; // Can be join, leave, state-change or timeout
+                var channelName = p.channel; // The channel for which the message belongs
+                var channelGroup = p.subscription; //  The channel group or wildcard subscription match (if exists)
+                var presenceEventTime = p.timestamp; // Presence event timetoken
+                var status = p.status; // 200
+                var message = p.message; // OK
+                var service = p.service; // service
+                var uuids = p.uuids;  // UUIDs of users who are connected with the channel with their state
+                var occupancy = p.occupancy; // No. of users connected with the channel
+            },
+            status: function (s) {
+                // handle status
+                var category = s.category; // PNConnectedCategory
+                var operation = s.operation; // PNSubscribeOperation
+                var affectedChannels = s.affectedChannels; // The channels affected in the operation, of type array.
+                var subscribedChannels = s.subscribedChannels; // All the current subscribed channels, of type array.
+                var affectedChannelGroups = s.affectedChannelGroups; // The channel groups affected in the operation, of type array.
+                var lastTimetoken = s.lastTimetoken; // The last timetoken used in the subscribe request, of type long.
+                var currentTimetoken = s.currentTimetoken; // The current timetoken fetched in the subscribe response, which is going to be used in the next request, of type long.
+
+            }
+        });
+        // pubnub.history(
+        //     {
+        //         channel: 'IOT-RFID',
+        //         reverse: true, // Setting to true will traverse the time line in reverse starting with the oldest message first.
+        //         count: 100, // how many items to fetch
+        //     },
+        //     function (status, response) {
+        //         // handle status, response
+        //         console.log(response)
+        //     }
+        // );
+    };
+    function addZero(i) {
+        if (i < 10) {
+            i = "0" + i;
+        }
+        return i;
+    }
+    function BaggageArrived(baggageTag) {
+        $.ajax('http://localhost:3000/api/Customer',
+            {
+                type: 'GET',
+                async: false,
+                success: function (data) {
+                    for (i = 0; i < data.length; i++) {
+                        if (data[i].baggageId == baggageTag) {
+                            obj = data[i];
+                            var d = new Date();
+                            var h = addZero(d.getHours());
+                            var m = addZero(d.getMinutes());
+                            timeStamp = h + ":" + m;
+                            data[i].baggageDestinationTime = timeStamp;
+
+                            delayTime = timeStamp.split(":")[1] - data[i].airlineDestinationTime.split(":")[1]
+
+                            if (delayTime > 1) {
+                                delayTime = delayTime - 1
+                                Amount = delayTime * 10;
+                                document.getElementById("messages").innerHTML += "Amount of " + Amount + " Will be Transfered to User " + data[i].userId;
+                                // alert("Amount of " + Amount + " Will be Transfered to User " + data[i].userId);
+                                //call delayAmount Transfer here.
+
+                            }
+                            else {
+                                delayTime = 0;
+                                document.getElementById("messages").innerHTML += "No Delay"
+                            }
+                            $.ajax('http://localhost:3000/api/Customer/' + data[i].userId,
+                                {
+                                    type: 'put',
+                                    async: false,
+                                    data: obj,
+                                    dataType: 'application/json',
+                                    success: function (data) {
+                                    },
+                                    error: function (errormsg) {
+                                        if (errormsg.status == 200) {
+                                            // x = {
+                                            //     "$class": "org.acme.sample.BaggageDelay",
+                                            //     "delayTimeInMinutes": 0,
+                                            //     "from": "org.acme.sample.Airlines#INS01",
+                                            //     "to": "org.acme.sample.Customer#"
+                                            // }
+                                            $.ajax('http://localhost:3000/api/BaggageDelay',
+                                                {
+                                                    type: 'POST',
+                                                    async: false,
+                                                    data: { "$class": "org.acme.sample.BaggageDelay", "delayTimeInMinutes": delayTime, "from": "org.acme.sample.Airlines#INS01", "to": "org.acme.sample.Customer#" + data[i].userId },
+                                                    dataType: 'application/json',
+                                                    success: function (data) {
+                                                        //alert('transfered');
+                                                    },
+                                                    error: function () {
+                                                        document.getElementById("messages").innerHTML += 'transfered</br>'
+                                                        // alert('transfered');
+                                                    }
+                                                });
+                                        }
+                                    }
+                                });
+                        }
+                    }
+                },
+                error: function () {
+                }
+            });
+    }
+    function Reset() {
+        $.ajax('http://localhost:3000/api/Customer',
+            {
+                type: 'GET',
+                async: false,
+                success: function (data) {
+                    for (i = 0; i < data.length; i++) {
+                        $.ajax('http://localhost:3000/api/Customer/' + data[i].userId,
+                            {
+                                type: 'DELETE',
+                                async: false,
+                                success: function () {
+                                    document.getElementById("Status").innerHTML += "Customer Details Cleared </br>"
+                                }
+                            });
+                    }
+
+                }
+            });
+        $.ajax('http://localhost:3000/api/Airlines',
+            {
+                type: 'GET',
+                async: false,
+                success: function (data) {
+                    for (i = 0; i < data.length; i++) {
+                        $.ajax('http://localhost:3000/api/Airlines/' + data[i].userId,
+                            {
+                                type: 'DELETE',
+                                async: false,
+                                success: function () {
+                                    document.getElementById("Status").innerHTML += "Airline Details Cleared </br>"
+                                }
+                            });
+                    }
+
+                }
+            });
+        $.ajax('http://localhost:3000/api/Account',
+            {
+                type: 'GET',
+                async: false,
+                success: function (data) {
+                    for (i = 0; i < data.length; i++) {
+                        $.ajax('http://localhost:3000/api/Account/' + data[i].accountId,
+                            {
+                                type: 'DELETE',
+                                async: false,
+                                success: function () {
+                                    document.getElementById("Status").innerHTML += "Accounts Details Cleared </br>"
+                                }
+                            });
+                    }
+
+                }
+            });
+        var companyName = prompt("Please enter company name:");
+        var Amount = prompt("Please enter the initial amount");
+        $.ajax('http://localhost:3000/api/Account',
+            {
+                type: 'POST',
+                async: false,
+                data: { "$class": "org.acme.sample.Account", "accountId": "A00", "balance": Amount },
+                success: function (data) {
+                    $.ajax('http://localhost:3000/api/Airlines',
+                        {
+                            type: 'POST',
+                            async: false,
+                            data: { "$class": "org.acme.sample.Airlines", "airlineName": companyName, "airlineAccount": "org.acme.sample.Account#A00", "userId": "INS01" },
+                            success: function (data) {
+                                document.getElementById("Status").innerHTML += "Created Airline account with</br> Id: INS01  ---- Balance:"+Amount;
+                            }
+                        });
+                }
+            });
+    }
+</script>
+
+</html>

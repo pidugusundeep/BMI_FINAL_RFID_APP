@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--Import Google Icon Font-->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!--Import materialize.css-->
+  <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection" />
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+  <script type="text/javascript" src="https://cdn.rawgit.com/chingyawhao/materialize-clockpicker/master/dist/js/materialize.clockpicker.js"></script>
+  <!--Let browser know website is optimized for mobile-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
+<body>
+  <div class="navbar-fixed">
+    <nav>
+      <div class="nav-wrapper indigo accent-2">
+        <a href="#" class="brand-logo">INSURANCE</a>
+        <i class="material-icons right black-text" style="padding-right:15px" onclick="logout()">power_settings_new</i>
+      </div>
+    </nav>
+  </div>
+  <div class="row">
+    <div class="col s12">
+      <ul class="tabs">
+        <li class="tab col s3">
+          <a class="active" href="#test1">Passenger</a>
+        </li>
+        <li class="tab col s3">
+          <a href="#test2">Profile</a>
+        </li>
+      </ul>
+    </div>
+    <div id="test1" class="col s12">
+      <div class="row" id="passengerList">
+      </div>
+    </div>
+    <div id="test2" class="col s12">
+      <div class="row">
+        <div id="test1" class="col s12">
+          <div class="row">
+            </br>
+            <Center>
+              <i class="material-icons" style="font-size: 150px;color:darkblue">account_circle</i>
+              <h5 id="company_name"></h5>
+              <h5 id="company_balance">Account Balance - </h5>
+            </Center>
+          </div>
+        </div>
+      </div>
+      <a class=" col s6 push-s3 btn-large green modal-trigger" href="#addParticipant">SET AIRLINE TIME</a>
+      <div id="addParticipant" class="modal">
+        <div class="modal-content">
+          <h4>Did the Airline arrive ?</h4>
+        </div>
+        <div class="modal-footer">
+          <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat" onclick="AirlineDestinationTimeSet()">Yes</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="Loader" class="modal">
+    <div class="modal-content">
+      <h5>Please wait....</h5>
+    </div>
+  </div>
+  <div id="addCard" class="modal">
+    <div class="modal-content row">
+      <div class="input-field col s12">
+        <input id="cardId" type="text" class="validate">
+        <label for="cardId">Enter Card Number</label>
+      </div>
+      <a href="#!" class=" col s4 push-s4 modal-action modal-close waves-effect waves-green btn green" onclick="cardLinking()">
+        <i class="large material-icons left ">add</i> Add</a>
+    </div>
+  </div>
+  <!--JavaScript at end of body for optimized loading-->
+  <script type="text/javascript" src="js/materialize.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('.tabs').tabs();
+      $('.modal-trigger').click(function () { });
+      $('.modal').modal();
+      $('#Loader').modal('open');
+      $('.timepicker').pickatime();
+      addUsers(0);
+      $('#Loader').modal('close');
+    });
+    function AirlineDestinationTimeSet() {
+      $.ajax('http://localhost:3000/api/Customer',
+        {
+          type: 'GET',
+          async: false,
+          success: function (data) {
+            for (i = 0; i < data.length; i++) {
+              obj = data[i];
+              var d = new Date();
+              var h = addZero(d.getHours());
+              var m = addZero(d.getMinutes());
+              timeStamp = h + ":" + m;
+              data[i].airlineDestinationTime = timeStamp;
+              $.ajax('http://localhost:3000/api/Customer/' + data[i].userId,
+                {
+                  type: 'put',
+                  async: false,
+                  data: obj,
+                  dataType: 'application/json',
+                  success: function (data) {
+                    
+                  },
+                  error: function (errormsg) {
+                  }
+                });
+            }
+            Materialize.toast('Airline Destination Time Set!', 3000);
+          },
+          error: function () {
+          }
+        });
+    }
+    function addZero(i) {
+        if (i < 10) {
+            i = "0" + i;
+        }
+        return i;
+    }
+    function addUsers(callairline) {
+      callairline = callairline;
+      //Adding passengers
+      $.ajax('http://localhost:3000/api/Customer',
+        {
+          dataType: 'json', // type of response data
+          timeout: 500,     // timeout milliseconds
+          type: 'GET',
+          async: false,
+          success: function (data, status, xhr) {   // success callback function
+            for (i = 0; i < data.length; i++) {
+              $.ajax('http://localhost:3000/api/Account/' + data[i].customerAccount.split('#')[1],
+                {
+                  async: false,
+                  dataType: 'json', // type of response data
+                  timeout: 500,     // timeout milliseconds
+                  type: 'GET',
+                  success: function (data1, status, xhr) {   // success callback function
+                    // for (i1 = 0; i1 < data.length; i1++) {
+                    $('#passengerList').append('<div class="col s12"><div class="z-depth-3 card light-blue darken-4"><div class="card-content white-text"><span class="card-title">' + data[i].firstName + ' ' + data[i].lastName + '</span></div><div class="card-action"><a href="#">Balance - ' + data1.balance + '</a><a class=" ">Id - ' + data[i].userId + '</a><a href="#add" onclick="addTags(\'' + data[i].userId + '\')" id="' + data[i].userId + '" class="right modal-action modal-close cyan-text">+ Add</a></div></div></div>');
+                    if (data[i].baggageId != "--")
+                      document.getElementById(data[i].userId).outerHTML = "<div class=\"right red-text\">Tag Id:<b> " + data[i].baggageId + "</b></div>";
+                    return true;
+                    // }
+                  },
+                  error: function (jqXhr, textStatus, errorMessage) { // error callback 
+                    $('p').append('Error1: ' + errorMessage);
+                    i = i - 1;
+                  }
+                });
+            }
+          },
+          error: function (jqXhr, textStatus, errorMessage) { // error callback 
+            $('p').append('Error2: ' + errorMessage);
+          }
+        });
+      if (callairline == 0) {
+        addAirline();
+      }
+      return true;
+    };
+    function cardLinking() {
+      $.ajax('http://localhost:3000/api/Customer',
+        {
+          type: 'GET',
+          async: false,
+          success: function (data) {
+            for (i = 0; i < data.length; i++) {
+              if (data[i].userId == sessionStorage.getItem('cardUserId')) {
+                obj = data[i];
+                obj.baggageId = $('#cardId').val().toString();
+                $.ajax('http://localhost:3000/api/Customer/' + sessionStorage.getItem('cardUserId'),
+                  {
+                    type: 'put',
+                    async: false,
+                    data: obj,
+                    dataType: 'application/json',
+                    success: function (data) {
+
+                    },
+                    error: function (errormsg) {
+                        if(errormsg.status == 200){
+                          $('#passengerList').empty();
+                          addUsers(1);
+                          Materialize.toast('Card Linked successfull !', 3000);
+                        }
+                    }
+                  });
+              }
+            }
+          }
+        });
+    }
+    function addTags(id) {
+      sessionStorage.setItem("cardUserId", id);
+      $('#addCard').modal('open');
+    }
+    function addAirline() {
+      //Adding Airline
+      $.ajax('http://localhost:3000/api/Airlines',
+        {
+          dataType: 'json', // type of response data
+          timeout: 500,     // timeout milliseconds
+          type: 'GET',
+          async: false,
+          success: function (data, status, xhr) {
+            $('#company_name').append(data[0].airlineName);
+            $.ajax('http://localhost:3000/api/Account/' + data[0].airlineAccount.split("#")[1],
+              {
+                dataType: 'json', // type of response data
+                timeout: 500,     // timeout milliseconds
+                type: 'GET',
+                async: false,
+                success: function (data, status, xhr) {
+                  $('#company_balance').append(data.balance);
+                }
+              });
+          }
+        });
+      return true;
+    }
+    function logout() {
+      sessionStorage.clear();
+      window.location = "login.html"
+    }
+    function addPassenger() {
+      $('#Loader').modal('open');
+      $.get("http://localhost:3000/api/Account", function (data) {
+        $.ajax({
+          type: "POST",
+          url: "http://localhost:3000/api/Account",
+          data: { "$class": "org.acme.sample.Account", "accountId": "A" + data.length + 1, "balance": $('#acc_balance').val() },
+          dataType: 'json',
+          success: function (data1) {
+            $.get("http://localhost:3000/api/Customer", function (customerData) {
+              $.ajax({
+                type: "POST",
+                url: "http://localhost:3000/api/Customer",
+                data: { "$class": "org.acme.sample.Customer", "firstName": $('#f_name').val(), "lastName": $('#l_name').val(), "customerAccount": "resource:org.acme.sample.Account#" + data1.accountId, "userId": "A" + parseInt(customerData.length + 1) },
+                dataType: 'json',
+                success: function (data) {
+                  $('#passengerList').empty();
+                  addUsers(1)
+                  $('#Loader').modal('close');
+                  Materialize.toast('New Passenger added !', 3000);
+                }
+              });
+            });
+          }
+        });
+      });
+    }
+  </script>
+</body>
+
+</html>

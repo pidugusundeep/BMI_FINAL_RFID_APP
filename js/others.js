@@ -32,7 +32,9 @@ function delayfunction() {
 $(document).ready(function () {
     $('select').material_select();
     $('.tabs').tabs();
-    $('.modal').modal();
+    $('.modal').modal({
+        dismissible: false,
+    });
     displayUser();
 
 });

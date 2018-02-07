@@ -1,11 +1,17 @@
 <html>
+
 <head>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection" />
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 </head>
+
 <body onload="subscribe()">
     <Center>
-        <h1>PubNub Test and Initial Setup</h1>
-        <button onclick="Reset()">RESET</button>
+        <h4>PubNub Test and Initial Setup</h4>
+        <button class="btn red" onclick="Reset()">RESET SYSTEM</button>
         <div id="Status"></div>
         <p id="messages"></p>
     </Center>
@@ -33,7 +39,7 @@
                 var pubTT = m.timetoken; // Publish timetoken   
                 document.getElementById("messages").innerHTML += msg + "</br>";
                 BaggageArrived(msg);
-                console.log("-- Baggage arrived ! --")
+                console.log("------ Baggage arrived ! -------")
             },
             presence: function (p) {
                 // handle presence
@@ -56,7 +62,6 @@
                 var affectedChannelGroups = s.affectedChannelGroups; // The channel groups affected in the operation, of type array.
                 var lastTimetoken = s.lastTimetoken; // The last timetoken used in the subscribe request, of type long.
                 var currentTimetoken = s.currentTimetoken; // The current timetoken fetched in the subscribe response, which is going to be used in the next request, of type long.
-
             }
         });
         // pubnub.history(
@@ -91,20 +96,15 @@
                             var m = addZero(d.getMinutes());
                             timeStamp = h + ":" + m;
                             data[i].baggageDestinationTime = timeStamp;
-
                             delayTime = timeStamp.split(":")[1] - data[i].airlineDestinationTime.split(":")[1]
-
                             if (delayTime > 1) {
                                 delayTime = delayTime - 1
                                 Amount = delayTime * 10;
                                 document.getElementById("messages").innerHTML += "Amount of " + Amount + " Will be Transfered to User " + data[i].userId;
-                                // alert("Amount of " + Amount + " Will be Transfered to User " + data[i].userId);
-                                //call delayAmount Transfer here.
-
                             }
                             else {
                                 delayTime = 0;
-                                document.getElementById("messages").innerHTML += "No Delay"
+                                document.getElementById("messages").innerHTML += "No Delay</br>"
                             }
                             $.ajax('http://localhost:3000/api/Customer/' + data[i].userId,
                                 {
@@ -159,10 +159,12 @@
                                 async: false,
                                 success: function () {
                                     document.getElementById("Status").innerHTML += "Customer Details Cleared </br>"
+                                },
+                                error:function(errormsg){
+                                    document.getElementById("Status").innerHTML +="Customer Details NOT Cleared"+errormsg+" </br>";
                                 }
                             });
                     }
-
                 }
             });
         $.ajax('http://localhost:3000/api/Airlines',
@@ -177,6 +179,9 @@
                                 async: false,
                                 success: function () {
                                     document.getElementById("Status").innerHTML += "Airline Details Cleared </br>"
+                                },
+                                error:function(errormsg){
+                                    document.getElementById("Status").innerHTML +="Airline Details NOT Cleared"+errormsg+" </br>";
                                 }
                             });
                     }
@@ -195,6 +200,9 @@
                                 async: false,
                                 success: function () {
                                     document.getElementById("Status").innerHTML += "Accounts Details Cleared </br>"
+                                },
+                                error:function(errormsg){
+                                    document.getElementById("Status").innerHTML +="Accounts Details NOT Cleared"+errormsg+" </br>";
                                 }
                             });
                     }
@@ -215,7 +223,7 @@
                             async: false,
                             data: { "$class": "org.acme.sample.Airlines", "airlineName": companyName, "airlineAccount": "org.acme.sample.Account#A00", "userId": "INS01" },
                             success: function (data) {
-                                document.getElementById("Status").innerHTML += "Created Airline account with</br> Id: INS01  ---- Balance:"+Amount;
+                                document.getElementById("Status").innerHTML += "Created Airline account with</br> Id: INS01  ---- Balance:" + Amount;
                             }
                         });
                 }

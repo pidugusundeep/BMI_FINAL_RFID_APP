@@ -9,9 +9,7 @@ function login() {
                 async: false,
                 success: function (data, status, xhr) {
                     sessionStorage.setItem("userId", data.userId);
-                   
                     sessionStorage.setItem("age", data.age);
-                     
                     window.location = "passengerview.html"
                 },
                 error: function (jqXhr, textStatus, errorMessage) {
@@ -76,6 +74,8 @@ function register(a) {
     }
 }
 $(document).ready(function () {
-    $('.modal').modal();
+    $('.modal').modal({
+        dismissible: false,
+    });
     $('#loader').hide();
 });

@@ -58,7 +58,7 @@ function register(a) {
                             success: function (data) {
                                 Materialize.toast('New Passenger added !', 3000);
                                 sessionStorage.setItem("userId", data.userId);
-                                sessionStorage.setItem("age", data.age);
+                                sessionStorage.setItem(" age", data.age);
                                 window.location = "passengerview.html"
                             }
                         });

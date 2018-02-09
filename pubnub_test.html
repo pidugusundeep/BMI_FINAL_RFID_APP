@@ -6,20 +6,29 @@
     <!--Import materialize.css-->
     <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection" />
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
 </head>
 
 <body onload="subscribe()">
     <Center>
         <h4>PubNub Test and Initial Setup</h4>
-        <button class="btn red" onclick="Reset()">RESET SYSTEM</button>
+                <button class="btn red" onclick="Reset()">RESET SYSTEM</button>
         <div id="Status"></div>
         <p id="messages"></p>
     </Center>
+    <div id="Loader" class="modal bottom-sheet">
+        <div class="modal-content">
+            <h5>Please wait....</h5>
+        </div>
+    </div>
 </body>
 <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.20.1.js"></script>
 <script>
+    $(document).ready(function () {
+        // the "href" attribute of the modal trigger must specify the modal ID that wants to be triggered
+        $('.modal').modal();
+    });
     function subscribe() {
-
         pubnub = new PubNub({
             publishKey: 'pub-c-8b72e987-9fc7-4566-b237-72a2297e78ca',
             subscribeKey: 'sub-c-c8a055ae-e4d3-11e7-9f1e-625d8ea2b1bc'
@@ -76,6 +85,9 @@
         //     }
         // );
     };
+    function test() {
+        Materialize.toast('Claimed successfully balance updated !', 3000);
+    }
     function addZero(i) {
         if (i < 10) {
             i = "0" + i;
@@ -147,6 +159,8 @@
             });
     }
     function Reset() {
+        $('#Loader').modal('open');
+
         $.ajax('http://localhost:3000/api/Customer',
             {
                 type: 'GET',
@@ -160,8 +174,8 @@
                                 success: function () {
                                     document.getElementById("Status").innerHTML += "Customer Details Cleared </br>"
                                 },
-                                error:function(errormsg){
-                                    document.getElementById("Status").innerHTML +="Customer Details NOT Cleared"+errormsg+" </br>";
+                                error: function (errormsg) {
+                                    document.getElementById("Status").innerHTML += "Customer Details NOT Cleared" + errormsg + " </br>";
                                 }
                             });
                     }
@@ -180,8 +194,8 @@
                                 success: function () {
                                     document.getElementById("Status").innerHTML += "Airline Details Cleared </br>"
                                 },
-                                error:function(errormsg){
-                                    document.getElementById("Status").innerHTML +="Airline Details NOT Cleared"+errormsg+" </br>";
+                                error: function (errormsg) {
+                                    document.getElementById("Status").innerHTML += "Airline Details NOT Cleared" + errormsg + " </br>";
                                 }
                             });
                     }
@@ -201,8 +215,8 @@
                                 success: function () {
                                     document.getElementById("Status").innerHTML += "Accounts Details Cleared </br>"
                                 },
-                                error:function(errormsg){
-                                    document.getElementById("Status").innerHTML +="Accounts Details NOT Cleared"+errormsg+" </br>";
+                                error: function (errormsg) {
+                                    document.getElementById("Status").innerHTML += "Accounts Details NOT Cleared" + errormsg + " </br>";
                                 }
                             });
                     }
@@ -228,6 +242,7 @@
                         });
                 }
             });
+        $('#Loader').modal('close');
     }
 </script>
 

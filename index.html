@@ -7,7 +7,7 @@
   <!--Import materialize.css-->
   <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection" />
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-
+  <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.20.1.js"></script>
   <script type="text/javascript" src="https://cdn.rawgit.com/chingyawhao/materialize-clockpicker/master/dist/js/materialize.clockpicker.js"></script>
   <!--Let browser know website is optimized for mobile-->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -196,10 +196,57 @@
             }
           }
         });
+        $('#cardId').val("")
     }
     function addTags(id) {
+      
       sessionStorage.setItem("cardUserId", id);
       $('#addCard').modal('open');
+      $('#cardId').outfocus();
+      pubnub = new PubNub({
+            publishKey: 'pub-c-8b72e987-9fc7-4566-b237-72a2297e78ca',
+            subscribeKey: 'sub-c-c8a055ae-e4d3-11e7-9f1e-625d8ea2b1bc'
+        })     // your subscribe key
+        pubnub.subscribe({
+            channels: ['IOT-RFID'],
+        });
+        pubnub.addListener({
+            message: function (m) {
+                // handle message
+                var actualChannel = m.actualChannel;
+                var channelName = m.channel; // The channel for which the message belongs
+                var msg = m.message; // The Payload
+                var publisher = m.publisher;
+                var subscribedChannel = m.subscribedChannel;
+                var channelGroup = m.subscription; // The channel group or wildcard subscription match (if exists)
+                var pubTT = m.timetoken; // Publish timetoken   
+                $('#cardId').focus();
+                $('#cardId').val(msg);
+                console.log("------ Baggage arrived ! -------")
+            },
+            presence: function (p) {
+                // handle presence
+                var action = p.action; // Can be join, leave, state-change or timeout
+                var channelName = p.channel; // The channel for which the message belongs
+                var channelGroup = p.subscription; //  The channel group or wildcard subscription match (if exists)
+                var presenceEventTime = p.timestamp; // Presence event timetoken
+                var status = p.status; // 200
+                var message = p.message; // OK
+                var service = p.service; // service
+                var uuids = p.uuids;  // UUIDs of users who are connected with the channel with their state
+                var occupancy = p.occupancy; // No. of users connected with the channel
+            },
+            status: function (s) {
+                // handle status
+                var category = s.category; // PNConnectedCategory
+                var operation = s.operation; // PNSubscribeOperation
+                var affectedChannels = s.affectedChannels; // The channels affected in the operation, of type array.
+                var subscribedChannels = s.subscribedChannels; // All the current subscribed channels, of type array.
+                var affectedChannelGroups = s.affectedChannelGroups; // The channel groups affected in the operation, of type array.
+                var lastTimetoken = s.lastTimetoken; // The last timetoken used in the subscribe request, of type long.
+                var currentTimetoken = s.currentTimetoken; // The current timetoken fetched in the subscribe response, which is going to be used in the next request, of type long.
+            }
+        });
     }
     function addAirline() {
       //Adding Airline

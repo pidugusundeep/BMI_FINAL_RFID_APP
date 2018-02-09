@@ -86,7 +86,7 @@ function displayUser() {
                         timeout: 500,     // timeout milliseconds
                         type: 'GET',
                         success: function (data1, status, xhr) {
-                            $('#account-balance').append('Account Balance: ' + data1.balance);
+                            $('#account-balance').append('Wallet Balance: ' + data1.balance);
                         },
                         error: function (jqXhr, textStatus, errorMessage) { // error callback 
                             alert(errorMessage);

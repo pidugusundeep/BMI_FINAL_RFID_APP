@@ -45,7 +45,7 @@
             <Center>
               <i class="material-icons" style="font-size: 150px;color:darkblue">account_circle</i>
               <h5 id="company_name"></h5>
-              <h5 id="company_balance">Account Balance - </h5>
+              <h5 id="company_balance">Wallet Balance - </h5>
             </Center>
           </div>
         </div>
@@ -163,6 +163,9 @@
       if (callairline == 0) {
         addAirline();
       }
+      else{
+        $('#Loader').modal('close');
+      }
       return true;
     };
     function cardLinking() {
@@ -202,7 +205,6 @@
       
       sessionStorage.setItem("cardUserId", id);
       $('#addCard').modal('open');
-      $('#cardId').outfocus();
       pubnub = new PubNub({
             publishKey: 'pub-c-8b72e987-9fc7-4566-b237-72a2297e78ca',
             subscribeKey: 'sub-c-c8a055ae-e4d3-11e7-9f1e-625d8ea2b1bc'

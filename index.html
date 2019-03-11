@@ -206,8 +206,9 @@
       sessionStorage.setItem("cardUserId", id);
       $('#addCard').modal('open');
       pubnub = new PubNub({
-            publishKey: 'pub-c-8b72e987-9fc7-4566-b237-72a2297e78ca',
-            subscribeKey: 'sub-c-c8a055ae-e4d3-11e7-9f1e-625d8ea2b1bc'
+        // get your keys on pubnub 
+            publishKey: '',
+            subscribeKey: ''
         })     // your subscribe key
         pubnub.subscribe({
             channels: ['IOT-RFID'],
